@@ -17,6 +17,7 @@ public class Main {
         return 1/(1 + Math.exp((-1) * alpha * value));
     }
 
+    //TODO Найдите ошибку, почему образуется выброс на графике
     public static void main(String[] args) {
         //Получим на вход матрицу значений
         List<List<Integer>> data = TextFile.readIntegerData("InputData.txt");
