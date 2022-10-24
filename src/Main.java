@@ -27,5 +27,6 @@ public class Main {
         } catch (IOException e) {
             throw new RuntimeException(e.getMessage(), e);
         }
+        Alghoritms.reversErrorDistributionResult(data, null);
     }
 }
