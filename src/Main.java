@@ -9,15 +9,14 @@ public class Main {
     final static int x0 = 1;
     final static int xLast = 1;
     final static int alpha = 1;
-
+    //100*100 квадрат/треугольник. Используя маски свернуть до n*n(10*10/5*5) (пуллинг, маска)
     //Скорость обучения
-    final static double nu = 0.75;
+    final static double nu = 0.95;
 
     static double func(double value){
         return 1/(1 + Math.exp((-1) * alpha * value));
     }
 
-    //TODO Найдите ошибку, почему образуется выброс на графике
     public static void main(String[] args) {
         //Получим на вход матрицу значений
         List<List<Integer>> data = TextFile.readIntegerData("InputData.txt");
@@ -32,7 +31,7 @@ public class Main {
             }
         }
         List<Double> eps = new ArrayList<>();
-        for(int i = 0; i < 50000; i++) {
+        for(int i = 0; i < 500000; i++) {
             AtomicReference<Double> valEp = new AtomicReference<>(0.0);
             data.forEach(row -> {
                 AtomicReference<Integer> numRow = new AtomicReference<>(0);
