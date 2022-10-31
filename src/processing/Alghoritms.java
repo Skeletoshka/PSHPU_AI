@@ -3,7 +3,10 @@ package processing;
 import preparation.Input;
 
 import java.io.Console;
+import java.io.FileWriter;
+import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicReference;
 
@@ -108,6 +111,21 @@ public class Alghoritms {
     public static void reversErrorDistributionResult(List<List<Integer>> data, Double nuCustom) {
         if (nuCustom == null) {
             nuCustom = nu;
+        }
+        try (FileWriter writer = new FileWriter("debug.dat", false)) {
+            Arrays.asList(dataW).forEach(val -> {
+                Arrays.asList(val).forEach(val2 -> {
+                try {
+                    writer.write(val2.toString().replace('.', ','));
+                    writer.append("\n");
+                } catch (Exception e){
+                    throw new RuntimeException(e.getMessage(), e);
+                }
+                });
+            });
+            writer.flush();
+        } catch (IOException e) {
+            throw new RuntimeException(e.getMessage(), e);
         }
         //Получим количество переменных
         int xN = data.get(0).size();
