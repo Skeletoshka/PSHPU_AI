@@ -1,5 +1,6 @@
 package processing;
 
+import file.TextFile;
 import preparation.Input;
 
 import java.io.Console;
@@ -192,5 +193,89 @@ public class Alghoritms {
             });
             System.out.println(func(s[s.length - 1]));
         });
+    }
+
+    /**Алгоритм свертывания нейросети
+     * @param matrix Матрица битов черно-белого изображения
+     * @param mask Маска преобразования
+     * @param n Количество строк исходного изображения
+     * @param m Количество столбцов исходного изображения
+     * @return Свернутая матрица*/
+    public static Long[][] convolutionalNet(Long[][] matrix, Integer[][] mask, int n, int m){
+        List<List<Long>> dataMatrix = Input.arrInListOfList(matrix);
+        List<List<Long>> outputMatrix=null;
+        do {
+            Long[][] tempMatrix;
+            if(outputMatrix==null) {
+                tempMatrix = matrix;
+                outputMatrix = dataMatrix;
+            }else{
+                tempMatrix=Input.listOfListLongInArr(outputMatrix);
+                dataMatrix=outputMatrix;
+            }
+            matrix = new Long[outputMatrix.size() + 2][outputMatrix.get(0).size() + 2];
+            for (int i = 0; i < matrix.length; i++) {
+                for (int j = 0; j < matrix[0].length; j++) {
+                    if (i == 0 || j == 0 || i == matrix.length - 1 || j == matrix[0].length - 1) {
+                        matrix[i][j] = 0l;
+                    } else {
+                        matrix[i][j] = tempMatrix[i - 1][j - 1];
+                    }
+                }
+            }
+            outputMatrix = new ArrayList<>();
+            for (int i = 0; i < dataMatrix.size() - mask.length; i++) {
+                List<Long> line = new ArrayList<>();
+                for (int j = 0; j < dataMatrix.get(0).size() - mask[0].length; j++) {
+                    Long sum = 0l;
+                    for (int iIn = i; iIn < i + mask.length; iIn++) {
+                        for (int jIn = j; jIn < j + mask[0].length; jIn++) {
+                            sum += matrix[iIn][jIn] * mask[iIn - i][jIn - j];
+                        }
+                    }
+                    line.add(sum);
+                }
+                outputMatrix.add(line);
+            }
+            outputMatrix=maxPulling(outputMatrix, 2);
+        }while(outputMatrix.size() > n || outputMatrix.get(0).size() > m );
+        return Input.listOfListLongInArr(outputMatrix);
+    }
+
+    /**Алгоритм пуллинга на основе максимального элемента. Из вложенных не пересекающихся матриц n*m берется максимальный элемент
+     * @param matrix - матрица до преобразования
+     * @param n - во сколько раз уменьшить матрицу
+     * @return Новая матрица*/
+    private static List<List<Long>> maxPulling(List<List<Long>> matrix, int n){
+        List<List<Long>> outputMatrix = new ArrayList<>();
+        Long[][] tempMatrix = new Long[n][n];
+        for(int i = 0; i < matrix.size(); i+=n){
+            List<Long> line = new ArrayList<>();
+            for(int j = 0; j < matrix.get(0).size(); j+=n){
+                for(int iIn = i; iIn < i+tempMatrix.length; iIn++){
+                    for(int jIn = j; jIn < j + tempMatrix[0].length; jIn++){
+                        tempMatrix[iIn-i][jIn-j] = matrix.get(i).get(j);
+                    }
+                }
+                line.add(maxInArr(tempMatrix));
+            }
+            outputMatrix.add(line);
+        }
+        return outputMatrix;
+    }
+
+    /**Метод для поиска наибольшего элемента во входящей матрице
+     * @param matrix Матрица
+     * @return Максимальный элемент*/
+    private static Long maxInArr(Long[][] matrix){
+        long max = matrix[0][0];
+        for(int i = 0; i < matrix.length; i++){
+            for(int j = 0; j < matrix[0].length; j++){
+                if(matrix[i][j] > max){
+                    max = matrix[i][j];
+                }
+            }
+        }
+        return max;
     }
 }

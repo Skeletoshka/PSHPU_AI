@@ -1,5 +1,6 @@
 package preparation;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
 
@@ -35,6 +36,50 @@ public class Input {
                     outputData[i][j] = res;
                 }
             }
+        }
+        return outputData;
+    }
+    public static Integer[][] listOfListInArr(List<List<Integer>> data){
+        Integer[][] outputData = new Integer[data.size()][data.get(0).size()];
+        for(int i = 0; i < data.size(); i++){
+            List<Integer> temp = data.get(i);
+            for(int j = 0; j < temp.size(); j++){
+                outputData[i][j] = temp.get(j);
+            }
+        }
+        return outputData;
+    }
+
+    public static Long[][] listOfListLongInArr(List<List<Long>> data){
+        Long[][] outputData = new Long[data.size()][data.get(0).size()];
+        for(int i = 0; i < data.size(); i++){
+            List<Long> temp = data.get(i);
+            for(int j = 0; j < temp.size(); j++){
+                outputData[i][j] = temp.get(j);
+            }
+        }
+        return outputData;
+    }
+
+    public static Long[][] listOfListIntInArr(List<List<Integer>> data){
+        Long[][] outputData = new Long[data.size()][data.get(0).size()];
+        for(int i = 0; i < data.size(); i++){
+            List<Integer> temp = data.get(i);
+            for(int j = 0; j < temp.size(); j++){
+                outputData[i][j] = (long) temp.get(j);
+            }
+        }
+        return outputData;
+    }
+
+    public static List<List<Long>> arrInListOfList(Long[][] data){
+        List<List<Long>> outputData = new ArrayList<>();
+        for(int i = 0; i < data.length; i++){
+            List<Long> line = new ArrayList<>();
+            for(int j = 0; j < data[0].length; j++){
+                line.add(data[i][j]);
+            }
+            outputData.add(line);
         }
         return outputData;
     }
