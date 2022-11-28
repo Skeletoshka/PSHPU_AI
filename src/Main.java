@@ -32,6 +32,7 @@ public class Main {
         }
         Alghoritms.reversErrorDistributionResult(data, null);
 
+        //Получаем данные из картинок
         List<List<Integer>> bitesCircle = PictureFile.readIntegerData("Circle.tiff");
         List<List<Integer>> bitesCircle2 = PictureFile.readIntegerData("Circle_2.tiff");
         List<List<Integer>> bitesCircle3 = PictureFile.readIntegerData("Circle_3.tiff");
@@ -41,6 +42,7 @@ public class Main {
         List<List<Integer>> bitesTriangle3 = PictureFile.readIntegerData("Triangle_3.tiff");
         List<List<Integer>> bitesTriangle4 = PictureFile.readIntegerData("Triangle_4.tiff");
 
+        //Преобразуем данные в матрицу
         Long[][] biteMatrixTriangle = Input.listOfListIntInArr(bitesTriangle);
         Long[][] biteMatrixTriangle2 = Input.listOfListIntInArr(bitesTriangle2);
         Long[][] biteMatrixTriangle3 = Input.listOfListIntInArr(bitesTriangle3);
@@ -50,11 +52,12 @@ public class Main {
         Long[][] biteMatrixCircle3 = Input.listOfListIntInArr(bitesCircle3);
         Long[][] biteMatrixCircle4 = Input.listOfListIntInArr(bitesCircle4);
 
+        //Создаем маску
         Integer[][] mask = new Integer[3][3];
         mask[0][0] = 0;mask[0][1] = 1;mask[0][2] = 0;
         mask[1][0] = 0;mask[1][1] = 1;mask[1][2] = 0;
         mask[2][0] = 1;mask[2][1] = 0;mask[2][2] = 1;
-        TextFile.writeData(mask, "mask.dat");
+        //Сворачиваем изображения
         biteMatrixTriangle = Alghoritms.convolutionalNet(biteMatrixTriangle, mask, 10, 10);
         biteMatrixTriangle2 = Alghoritms.convolutionalNet(biteMatrixTriangle2, mask, 10, 10);
         biteMatrixTriangle3 = Alghoritms.convolutionalNet(biteMatrixTriangle3, mask, 10, 10);
@@ -64,9 +67,7 @@ public class Main {
         biteMatrixCircle3 = Alghoritms.convolutionalNet(biteMatrixCircle3, mask, 10, 10);
         biteMatrixCircle4 = Alghoritms.convolutionalNet(biteMatrixCircle4, mask, 10, 10);
 
-        PictureFile.createJPG(biteMatrixTriangle, "img/tempTriangle.jpg");
-        PictureFile.createJPG(biteMatrixCircle, "img/tempCircle.jpg");
-
+        //Преобразуем матрицы свернутых изображений в массивы
         Integer[] biteArrTriangle = Input.matrixToArray(Input.longInArr(biteMatrixTriangle));
         Integer[] biteArrTriangle2 = Input.matrixToArray(Input.longInArr(biteMatrixTriangle2));
         Integer[] biteArrTriangle3 = Input.matrixToArray(Input.longInArr(biteMatrixTriangle3));
@@ -76,6 +77,7 @@ public class Main {
         Integer[] biteArrCircle3 = Input.matrixToArray(Input.longInArr(biteMatrixCircle3));
         Integer[] biteArrCircle4 = Input.matrixToArray(Input.longInArr(biteMatrixCircle4));
 
+        //Создаем матрицу из наших массивов с итоговыми значениями
         Integer[][] concArr = Input.concatenateArr(Input.addRes(biteArrTriangle, 0), Input.addRes(biteArrCircle, 1));
         Integer[][] concArr2 = Input.concatenateArr(Input.addRes(biteArrTriangle2, 0), Input.addRes(biteArrCircle2, 1));
         Integer[][] concArr3 = Input.concatenateArr(concArr, concArr2);
@@ -84,6 +86,7 @@ public class Main {
         concArr = Input.concatenateArr(concArr, concArr2);
         concArr3 = Input.concatenateArr(concArr, concArr3);
         eps = new ArrayList<>();
+        //Обучаем нейросеть
         Alghoritms.reversErrorDistribution(Input.arrInListOfList(concArr3), null, eps, 50000);
         try (FileWriter writer = new FileWriter("a.dat", false)) {
             eps.forEach(val -> {
@@ -99,6 +102,7 @@ public class Main {
             throw new RuntimeException(e.getMessage(), e);
         }
 
+        //Проверка
         Alghoritms.reversErrorDistributionResult(Input.arrInListOfList(concArr3), null);
 
         //Тест на не обучаемых данных
