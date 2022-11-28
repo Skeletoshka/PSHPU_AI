@@ -25,31 +25,38 @@ public class Input {
         return dataW;
     }
 
-    public static Integer[][] listOfListInArr(List<List<Integer>> data, int res){
-        Integer[][] outputData = new Integer[data.size()][data.get(0).size() + 1];
-        for(int i = 0; i < data.size(); i++){
-            List<Integer> temp = data.get(i);
-            for(int j = 0; j < temp.size() + 1; j++){
-                if(j < temp.size()) {
-                    outputData[i][j] = temp.get(j);
-                }else{
-                    outputData[i][j] = res;
-                }
-            }
-        }
-        return outputData;
-    }
-    public static Integer[][] listOfListInArr(List<List<Integer>> data){
-        Integer[][] outputData = new Integer[data.size()][data.get(0).size()];
-        for(int i = 0; i < data.size(); i++){
-            List<Integer> temp = data.get(i);
-            for(int j = 0; j < temp.size(); j++){
-                outputData[i][j] = temp.get(j);
+    /**Преобразование матрицы LONG в матрицу Integer
+     * @param data Входные данные
+     */
+    public static Integer[][] longInArr(Long[][] data){
+        Integer[][] outputData = new Integer[data.length][data[0].length];
+        for(int i = 0; i < data.length; i++){
+            Long[] temp = data[i];
+            for(int j = 0; j < temp.length; j++){
+                outputData[i][j]=Math.toIntExact(temp[j])%2;
             }
         }
         return outputData;
     }
 
+    /**Добавление в массив результата этого массива для обучения
+     * @param data Входной массив
+     * @param res Результат массива
+     * */
+    public static Integer[] addRes(Integer[] data, int res){
+        Integer[] outputData = new Integer[data.length + 1];
+        for(int i = 0; i < data.length + 1; i++){
+            if(i < data.length) {
+                outputData[i] = data[i];
+            }else{
+                outputData[i] = res;
+            }
+        }
+        return outputData;
+    }
+
+    /**Преобразование списка из списков Long в матрицу Long
+     * @param data Входной список списков*/
     public static Long[][] listOfListLongInArr(List<List<Long>> data){
         Long[][] outputData = new Long[data.size()][data.get(0).size()];
         for(int i = 0; i < data.size(); i++){
@@ -61,6 +68,8 @@ public class Input {
         return outputData;
     }
 
+    /**Преобразование списка из списков Integer в матрицу Long
+     * @param data Входной список списков*/
     public static Long[][] listOfListIntInArr(List<List<Integer>> data){
         Long[][] outputData = new Long[data.size()][data.get(0).size()];
         for(int i = 0; i < data.size(); i++){
@@ -72,6 +81,8 @@ public class Input {
         return outputData;
     }
 
+    /**Преобразование матрицы Long в список списков Long
+     * @param data Входная матрица*/
     public static List<List<Long>> arrInListOfList(Long[][] data){
         List<List<Long>> outputData = new ArrayList<>();
         for(int i = 0; i < data.length; i++){
@@ -84,6 +95,37 @@ public class Input {
         return outputData;
     }
 
+    /**Преобразование матрицы Integer в список списков Integer
+     * @param data Входная матрица*/
+    public static List<List<Integer>> arrInListOfList(Integer[][] data){
+        List<List<Integer>> outputData = new ArrayList<>();
+        for(int i = 0; i < data.length; i++){
+            List<Integer> line = new ArrayList<>();
+            for(int j = 0; j < data[0].length; j++){
+                line.add(data[i][j]);
+            }
+            outputData.add(line);
+        }
+        return outputData;
+    }
+
+    /**Преобразование матрицы Integer в массив Integer
+     * @param data входная матрица*/
+    public static Integer[] matrixToArray(Integer[][] data){
+        Integer[] outputArray = new Integer[data.length * data[0].length];
+        int count = 0;
+        for (Integer[] datum : data) {
+            for (Integer value : datum) {
+                outputArray[count] = value;
+                count++;
+            }
+        }
+        return outputArray;
+    }
+
+    /**Соединяет 2 матрицы в 1 матрицу
+     * @param arr1 Матрица 1
+     * @param arr2 Матрица 2*/
     public static Integer[][] concatenateArr(Integer[][] arr1, Integer[][] arr2){
         Integer[][] outputData = new Integer[arr1.length + arr2.length][arr1[0].length];
         for(int i = 0; i < arr1.length; i++){
@@ -91,6 +133,18 @@ public class Input {
                 outputData[i][j] = arr1[i][j];
                 outputData[i + arr1.length][j] = arr2[i][j];
             }
+        }
+        return outputData;
+    }
+
+    /**Соединяет 2 массива в 1 матрицу
+     * @param arr1 Матрица 1
+     * @param arr2 Матрица 2*/
+    public static Integer[][] concatenateArr(Integer[] arr1, Integer[] arr2){
+        Integer[][] outputData = new Integer[2][arr1.length];
+        for(int i = 0; i < arr1.length; i++){
+            outputData[0][i] = arr1[i];
+            outputData[1][i] = arr2[i];
         }
         return outputData;
     }

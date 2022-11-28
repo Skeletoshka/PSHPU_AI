@@ -13,6 +13,8 @@ import java.util.regex.Pattern;
 
 public class PictureFile {
 
+    /**Преобразование картинки в Список списков Integer
+     * @param path Путь к изображению*/
     public static List<List<Integer>> readIntegerData(String path){
         File img = new File(path);
         List<List<Integer>> bites = new ArrayList<>();
@@ -35,6 +37,10 @@ public class PictureFile {
         return bites;
     }
 
+    /**Создание изображения из матрицы байтов
+     * @param data Данные
+     * @param path Путь к файлу
+     */
     public static void createJPG(Long[][] data, String path){
         try {
             BufferedImage image = new BufferedImage(data.length, data[0].length, BufferedImage.TYPE_INT_RGB);

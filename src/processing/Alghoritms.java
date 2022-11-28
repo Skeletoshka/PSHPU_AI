@@ -12,14 +12,16 @@ import java.util.List;
 import java.util.concurrent.atomic.AtomicReference;
 
 public class Alghoritms {
+    //Значение скрытого нейрона
     final static int x0 = 1;
     final static int xLast = 1;
     final static int alpha = 1;
-    //100*100 квадрат/треугольник. Используя маски свернуть до n*n(10*10/5*5) (пуллинг, маска)
     //Скорость обучения
     final static double nu = 0.95;
 
+    //Веса
     static Double[][] dataW;
+    //Сигмоида
     static double func(double value){
         return 1/(1 + Math.exp((-1) * alpha * value));
     }
@@ -39,6 +41,7 @@ public class Alghoritms {
         dataW = Input.randMatrix(xN, -1, 1);
         Double finalNuCustom = nuCustom;
         for(int i = 0; i < numEpoch; i++) {
+            //Значение эпохи (выходное)
             AtomicReference<Double> valEp = new AtomicReference<>(0.0);
             data.forEach(row -> {
                 AtomicReference<Integer> numRow = new AtomicReference<>(0);
@@ -50,6 +53,7 @@ public class Alghoritms {
                 for(int k = 0; k < dataW.length; k++){
                     s[k] += x0 * dataW[k][0];
                 }
+                //Остальные слагаемые суммы
                 for(int k = 0; k < row.size()-1; k++){
                     for (int j = 0; j < dataW.length; j++) {
                         s[j] += dataW[j][k+1] * row.get(k);
@@ -112,21 +116,6 @@ public class Alghoritms {
     public static void reversErrorDistributionResult(List<List<Integer>> data, Double nuCustom) {
         if (nuCustom == null) {
             nuCustom = nu;
-        }
-        try (FileWriter writer = new FileWriter("debug.dat", false)) {
-            Arrays.asList(dataW).forEach(val -> {
-                Arrays.asList(val).forEach(val2 -> {
-                try {
-                    writer.write(val2.toString().replace('.', ','));
-                    writer.append("\n");
-                } catch (Exception e){
-                    throw new RuntimeException(e.getMessage(), e);
-                }
-                });
-            });
-            writer.flush();
-        } catch (IOException e) {
-            throw new RuntimeException(e.getMessage(), e);
         }
         //Получим количество переменных
         int xN = data.get(0).size();
@@ -207,13 +196,16 @@ public class Alghoritms {
         do {
             Long[][] tempMatrix;
             if(outputMatrix==null) {
+                //Первая итерация - не было свертывания
                 tempMatrix = matrix;
                 outputMatrix = dataMatrix;
             }else{
+                //после первой итерации - используем данные от свертывания
                 tempMatrix=Input.listOfListLongInArr(outputMatrix);
                 dataMatrix=outputMatrix;
             }
             matrix = new Long[outputMatrix.size() + 2][outputMatrix.get(0).size() + 2];
+            //огораживаем нулями картинку для сохранения размерности от свертывания
             for (int i = 0; i < matrix.length; i++) {
                 for (int j = 0; j < matrix[0].length; j++) {
                     if (i == 0 || j == 0 || i == matrix.length - 1 || j == matrix[0].length - 1) {
@@ -224,6 +216,7 @@ public class Alghoritms {
                 }
             }
             outputMatrix = new ArrayList<>();
+            //Прогоняем маску перемножая соответствующие элементы и суммируя произведение
             for (int i = 0; i < dataMatrix.size() - mask.length; i++) {
                 List<Long> line = new ArrayList<>();
                 for (int j = 0; j < dataMatrix.get(0).size() - mask[0].length; j++) {
@@ -237,6 +230,7 @@ public class Alghoritms {
                 }
                 outputMatrix.add(line);
             }
+            //Используем пуллинг для матрицы
             outputMatrix=maxPulling(outputMatrix, 2);
         }while(outputMatrix.size() > n || outputMatrix.get(0).size() > m );
         return Input.listOfListLongInArr(outputMatrix);
@@ -252,11 +246,13 @@ public class Alghoritms {
         for(int i = 0; i < matrix.size(); i+=n){
             List<Long> line = new ArrayList<>();
             for(int j = 0; j < matrix.get(0).size(); j+=n){
+                //Заносим данные в временную матрицу
                 for(int iIn = i; iIn < i+tempMatrix.length; iIn++){
                     for(int jIn = j; jIn < j + tempMatrix[0].length; jIn++){
                         tempMatrix[iIn-i][jIn-j] = matrix.get(i).get(j);
                     }
                 }
+                //Ищем максимальный элемент этой матрицы и добавляем его
                 line.add(maxInArr(tempMatrix));
             }
             outputMatrix.add(line);
