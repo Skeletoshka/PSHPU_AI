@@ -13,6 +13,7 @@ import java.util.List;
 public class Main {
 
     public static void main(String[] args) {
+        //Мега-крутой комментарий
         //Получим на вход матрицу значений
         List<List<Integer>> data = TextFile.readIntegerData("InputData.txt");
         List<Double> eps = new ArrayList<>();
