@@ -13,6 +13,7 @@ import java.util.List;
 public class Main {
 
     public static void main(String[] args) {
+        Date date = new Date();
         //Мега-крутой комментарий
         //Получим на вход матрицу значений
         List<List<Integer>> data = TextFile.readIntegerData("InputData.txt");
@@ -112,6 +113,6 @@ public class Main {
         biteMatrixTest = Alghoritms.convolutionalNet(biteMatrixTest, mask, 10, 10);
         Integer[] biteArrTest = Input.matrixToArray(Input.longInArr(biteMatrixTest));
         Alghoritms.reversErrorDistributionResult(Input.arrInListOfList(Input.concatenateArr(Input.addRes(biteArrTest, 0), Input.addRes(biteArrTest, 0))), null);
-
+        System.out.println((new Date().getTime() - date.getTime())/1000);
     }
 }
