@@ -1,8 +1,7 @@
 package preparation;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Random;
+import java.io.*;
+import java.util.*;
 
 import static java.lang.Math.abs;
 
@@ -43,13 +42,13 @@ public class Input {
      * @param data Входной массив
      * @param res Результат массива
      * */
-    public static Integer[] addRes(Integer[] data, int res){
-        Integer[] outputData = new Integer[data.length + 1];
+    public static Long[] addRes(Long[] data, int res){
+        Long[] outputData = new Long[data.length + 1];
         for(int i = 0; i < data.length + 1; i++){
             if(i < data.length) {
                 outputData[i] = data[i];
             }else{
-                outputData[i] = res;
+                outputData[i] = (long) res;
             }
         }
         return outputData;
@@ -95,6 +94,20 @@ public class Input {
         return outputData;
     }
 
+    /**Преобразование матрицы Long в список списков Integer
+     * @param data Входная матрица*/
+    public static List<List<Integer>> arrInListOfListInteger(Long[][] data){
+        List<List<Integer>> outputData = new ArrayList<>();
+        for(int i = 0; i < data.length; i++){
+            List<Integer> line = new ArrayList<>();
+            for(int j = 0; j < data[0].length; j++){
+                line.add(data[i][j].intValue());
+            }
+            outputData.add(line);
+        }
+        return outputData;
+    }
+
     /**Преобразование матрицы Integer в список списков Integer
      * @param data Входная матрица*/
     public static List<List<Integer>> arrInListOfList(Integer[][] data){
@@ -121,6 +134,52 @@ public class Input {
             }
         }
         return outputArray;
+    }
+
+    /**Преобразование Списка списков Integer в массив Integer
+     * @param data входная матрица*/
+    public static Long[] matrixToArray(List<List<Integer>> data){
+        Long[] outputArray = new Long[data.size() * data.get(0).size()];
+        int count = 0;
+        for (List<Integer> datum : data) {
+            for (Integer value : datum) {
+                outputArray[count] = (long)value;
+                count++;
+            }
+        }
+        return outputArray;
+    }
+
+    public static Map<String, Integer> readCsv(String path) throws IOException {
+        BufferedReader csvReader = new BufferedReader(new FileReader(path));
+        Map<String, Integer> csv = new HashMap<>();
+        String row = csvReader.readLine();
+        while ((row = csvReader.readLine()) != null) {
+            String[] data = row.split(",");
+            csv.put(data[0], Integer.valueOf(data[1]));
+        }
+        csvReader.close();
+        return csv;
+    }
+
+    public static Double[][] readWeight(String path){
+        try (BufferedReader reader = new BufferedReader(new FileReader(path))){
+            String str = reader.readLine();
+            if(str == null){
+                throw new RuntimeException(String.format("File %s is empty", path));
+            }
+            int count = str.split(" ").length;
+            Double[][] data = new Double[count][count];
+            int i = 0;
+            while (str != null){
+                data[i] = Arrays.stream(str.split(" ")).map(Double::valueOf).toArray(Double[]::new);
+                str = reader.readLine();
+                i++;
+            }
+            return data;
+        }catch (Exception e){
+            throw new RuntimeException(e.getMessage(), e);
+        }
     }
 
     /**Соединяет 2 матрицы в 1 матрицу

@@ -3,94 +3,56 @@ import file.TextFile;
 import preparation.Input;
 import processing.Alghoritms;
 
-import javax.imageio.ImageIO;
-import java.awt.*;
-import java.awt.image.BufferedImage;
 import java.io.*;
 import java.util.*;
 import java.util.List;
+import java.util.logging.Logger;
 
 public class Main {
+    private static String testPath = "archive\\test";
+    private static String trainPath = "archive\\train";
+    private static String preparePath = "archive";
 
-    public static void main(String[] args) {
+    public static void main(String[] args) throws IOException {
         Date date = new Date();
-        //Мега-крутой комментарий
-        //Получим на вход матрицу значений
-        List<List<Integer>> data = TextFile.readIntegerData("InputData.txt");
-        List<Double> eps = new ArrayList<>();
-        Alghoritms.reversErrorDistribution(data, null, eps, 50000);
-        try (FileWriter writer = new FileWriter("b.dat", false)) {
-            eps.forEach(val -> {
-                try {
-                    writer.write(val.toString().replace('.', ','));
-                    writer.append("\n");
-                } catch (Exception e){
-                    throw new RuntimeException(e.getMessage(), e);
-                }
-            });
-            writer.flush();
-        } catch (IOException e) {
-            throw new RuntimeException(e.getMessage(), e);
-        }
-        Alghoritms.reversErrorDistributionResult(data, null);
-
-        //Получаем данные из картинок
-        List<List<Integer>> bitesCircle = PictureFile.readIntegerData("Circle.tiff");
-        List<List<Integer>> bitesCircle2 = PictureFile.readIntegerData("Circle_2.tiff");
-        List<List<Integer>> bitesCircle3 = PictureFile.readIntegerData("Circle_3.tiff");
-        List<List<Integer>> bitesCircle4 = PictureFile.readIntegerData("Circle_4.tiff");
-        List<List<Integer>> bitesTriangle = PictureFile.readIntegerData("Triangle.tiff");
-        List<List<Integer>> bitesTriangle2 = PictureFile.readIntegerData("Triangle_2.tiff");
-        List<List<Integer>> bitesTriangle3 = PictureFile.readIntegerData("Triangle_3.tiff");
-        List<List<Integer>> bitesTriangle4 = PictureFile.readIntegerData("Triangle_4.tiff");
-
-        //Преобразуем данные в матрицу
-        Long[][] biteMatrixTriangle = Input.listOfListIntInArr(bitesTriangle);
-        Long[][] biteMatrixTriangle2 = Input.listOfListIntInArr(bitesTriangle2);
-        Long[][] biteMatrixTriangle3 = Input.listOfListIntInArr(bitesTriangle3);
-        Long[][] biteMatrixTriangle4 = Input.listOfListIntInArr(bitesTriangle4);
-        Long[][] biteMatrixCircle = Input.listOfListIntInArr(bitesCircle);
-        Long[][] biteMatrixCircle2 = Input.listOfListIntInArr(bitesCircle2);
-        Long[][] biteMatrixCircle3 = Input.listOfListIntInArr(bitesCircle3);
-        Long[][] biteMatrixCircle4 = Input.listOfListIntInArr(bitesCircle4);
-
         //Создаем маску
         Integer[][] mask = new Integer[3][3];
         mask[0][0] = 0;mask[0][1] = 1;mask[0][2] = 0;
         mask[1][0] = 0;mask[1][1] = 1;mask[1][2] = 0;
         mask[2][0] = 1;mask[2][1] = 0;mask[2][2] = 1;
-        //Сворачиваем изображения
-        biteMatrixTriangle = Alghoritms.convolutionalNet(biteMatrixTriangle, mask, 10, 10);
-        biteMatrixTriangle2 = Alghoritms.convolutionalNet(biteMatrixTriangle2, mask, 10, 10);
-        biteMatrixTriangle3 = Alghoritms.convolutionalNet(biteMatrixTriangle3, mask, 10, 10);
-        biteMatrixTriangle4 = Alghoritms.convolutionalNet(biteMatrixTriangle4, mask, 10, 10);
-        biteMatrixCircle = Alghoritms.convolutionalNet(biteMatrixCircle, mask, 10, 10);
-        biteMatrixCircle2 = Alghoritms.convolutionalNet(biteMatrixCircle2, mask, 10, 10);
-        biteMatrixCircle3 = Alghoritms.convolutionalNet(biteMatrixCircle3, mask, 10, 10);
-        biteMatrixCircle4 = Alghoritms.convolutionalNet(biteMatrixCircle4, mask, 10, 10);
-
-        //Преобразуем матрицы свернутых изображений в массивы
-        Integer[] biteArrTriangle = Input.matrixToArray(Input.longInArr(biteMatrixTriangle));
-        Integer[] biteArrTriangle2 = Input.matrixToArray(Input.longInArr(biteMatrixTriangle2));
-        Integer[] biteArrTriangle3 = Input.matrixToArray(Input.longInArr(biteMatrixTriangle3));
-        Integer[] biteArrTriangle4 = Input.matrixToArray(Input.longInArr(biteMatrixTriangle4));
-        Integer[] biteArrCircle = Input.matrixToArray(Input.longInArr(biteMatrixCircle));
-        Integer[] biteArrCircle2 = Input.matrixToArray(Input.longInArr(biteMatrixCircle2));
-        Integer[] biteArrCircle3 = Input.matrixToArray(Input.longInArr(biteMatrixCircle3));
-        Integer[] biteArrCircle4 = Input.matrixToArray(Input.longInArr(biteMatrixCircle4));
-
-        //Создаем матрицу из наших массивов с итоговыми значениями
-        Integer[][] concArr = Input.concatenateArr(Input.addRes(biteArrTriangle, 0), Input.addRes(biteArrCircle, 1));
-        Integer[][] concArr2 = Input.concatenateArr(Input.addRes(biteArrTriangle2, 0), Input.addRes(biteArrCircle2, 1));
-        Integer[][] concArr3 = Input.concatenateArr(concArr, concArr2);
-        concArr = Input.concatenateArr(Input.addRes(biteArrTriangle3, 0), Input.addRes(biteArrCircle3, 1));
-        concArr2 = Input.concatenateArr(Input.addRes(biteArrTriangle4, 0), Input.addRes(biteArrCircle4, 1));
-        concArr = Input.concatenateArr(concArr, concArr2);
-        concArr3 = Input.concatenateArr(concArr, concArr3);
-        eps = new ArrayList<>();
+        //Получим все каталоги с изображениями для обучения
+        File[] files = new File(trainPath).listFiles((dir, name) -> !name.endsWith(".txt"));
+        if(files == null || files.length == 0){
+            throw new RuntimeException("Отсутствует тестовое множество");
+        }
+        List<List<Long>> data = new ArrayList<>();
+        Map<String, Integer> trainData = Input.readCsv(preparePath + "\\train.csv");
+        Arrays.stream(files)
+                .forEach(file -> {
+                    if(file.listFiles() == null || file.listFiles().length == 0){
+                        throw new RuntimeException(String.format("Отсутствуют изображения в каталоге %s", file.getPath()));
+                    }
+                    Arrays.stream(file.listFiles()).parallel().forEach(image -> {
+                        try {
+                            //Получим байты изображения для свёртывания
+                            Long[][] imgBytes = Input.listOfListIntInArr(PictureFile.readIntegerData(image.getPath(), 1000));
+                            imgBytes = Alghoritms.convolutionalNet(imgBytes, mask, 50, 50);
+                            List<List<Integer>> convImageBytes = Input.arrInListOfListInteger(imgBytes);
+                            String path = image.getPath().substring(preparePath.length() + 1);
+                            Long[] bytes = Input.addRes(Input.matrixToArray(convImageBytes),
+                                    trainData.get(path.replace("\\", "/")));
+                            data.add(Arrays.asList(bytes));
+                            System.out.printf("File %s has been processed%n", image.getPath());
+                        }catch (Exception e){
+                            System.out.printf("File %s has been error%n", image.getPath());
+                            throw new RuntimeException(e.getMessage(), e);
+                        }
+                    });
+        });
+        List <Double> eps = new ArrayList<>();
         //Обучаем нейросеть
-        Alghoritms.reversErrorDistribution(Input.arrInListOfList(concArr3), null, eps, 50000);
-        try (FileWriter writer = new FileWriter("a.dat", false)) {
+        Alghoritms.reversErrorDistribution(data, null, eps, 20);
+        try (FileWriter writer = new FileWriter("error.dat", false)) {
             eps.forEach(val -> {
                 try {
                     writer.write(val.toString().replace('.', ','));
@@ -103,16 +65,42 @@ public class Main {
         } catch (IOException e) {
             throw new RuntimeException(e.getMessage(), e);
         }
-
+        TextFile.writeData(Alghoritms.dataW, "a.dat");
+        files = new File(trainPath).listFiles((dir, name) -> !name.endsWith(".txt"));
+        if(files == null || files.length == 0){
+            throw new RuntimeException("Отсутствует тестовое множество");
+        }
+        data.clear();
         //Проверка
-        Alghoritms.reversErrorDistributionResult(Input.arrInListOfList(concArr3), null);
+        Arrays.stream(files)
+                .forEach(file -> {
+                    if(file.listFiles() == null || file.listFiles().length == 0){
+                        throw new RuntimeException(String.format("Отсутствуют изображения в каталоге %s", file.getPath()));
+                    }
+                    Arrays.stream(file.listFiles()).parallel().forEach(image -> {
+                        try {
+                            //Получим байты изображения для свёртывания
+                            Long[][] imgBytes = Input.listOfListIntInArr(PictureFile.readIntegerData(image.getPath(), 1000));
+                            imgBytes = Alghoritms.convolutionalNet(imgBytes, mask, 50, 50);
+                            List<List<Integer>> convImageBytes = Input.arrInListOfListInteger(imgBytes);
+                            Long[] bytes = Input.matrixToArray(convImageBytes);
+                            data.add(Arrays.asList(bytes));
+                            System.out.printf("File %s has been processed%n", image.getPath());
+                        }catch (Exception e){
+                            System.out.printf("File %s has been error%n", image.getPath());
+                            throw new RuntimeException(e.getMessage(), e);
+                        }
+                    });
+                });
+        Alghoritms.reversErrorDistributionResult(data, null);
 
         //Тест на не обучаемых данных
-        List<List<Integer>> bitesTest = PictureFile.readIntegerData("Test.tiff");
+        /*List<List<Integer>> bitesTest = PictureFile.readIntegerData("Test.tiff");
         Long[][] biteMatrixTest = Input.listOfListIntInArr(bitesTest);
         biteMatrixTest = Alghoritms.convolutionalNet(biteMatrixTest, mask, 10, 10);
         Integer[] biteArrTest = Input.matrixToArray(Input.longInArr(biteMatrixTest));
-        Alghoritms.reversErrorDistributionResult(Input.arrInListOfList(Input.concatenateArr(Input.addRes(biteArrTest, 0), Input.addRes(biteArrTest, 0))), null);
+        Alghoritms.reversErrorDistributionResult(Input.arrInListOfList(Input.concatenateArr(Input.addRes(biteArrTest, 0),
+                Input.addRes(biteArrTest, 0))), null);*/
         System.out.println((new Date().getTime() - date.getTime())/1000);
     }
 }

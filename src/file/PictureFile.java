@@ -15,21 +15,22 @@ public class PictureFile {
 
     /**Преобразование картинки в Список списков Integer
      * @param path Путь к изображению*/
-    public static List<List<Integer>> readIntegerData(String path){
+    public static List<List<Integer>> readIntegerData(String path, int size){
         File img = new File(path);
         List<List<Integer>> bites = new ArrayList<>();
         try {
             ByteArrayOutputStream baos = new ByteArrayOutputStream(10000);
-            BufferedImage image = ImageIO.read(img);
-            int[] els = new int[1];
-            for(int i = 0; i < 100; i++){
+            Image image = ImageIO.read(img).getScaledInstance(size, size, Image.SCALE_DEFAULT);
+            BufferedImage bi = new BufferedImage(size, size, BufferedImage.TYPE_INT_ARGB);
+            bi.getGraphics().drawImage(image, 0, 0, null);
+            for(int i = 0; i < bi.getHeight(); i++){
                 List<Integer> datas = new ArrayList<>();
-                for(int j = 0; j < 100; j++){
-                    datas.add(image.getData().getPixel(i, j, els)[0]);
+                for(int j = 0; j < bi.getWidth(); j++){
+                    datas.add(bi.getRGB(j, i));
                 }
                 bites.add(datas);
             }
-            ImageIO.write(image, "tiff", baos);
+            ImageIO.write(bi, "tiff", baos);
             baos.close();
         }catch (Exception e){
             throw new RuntimeException(e.getMessage(), e);
@@ -46,10 +47,7 @@ public class PictureFile {
             BufferedImage image = new BufferedImage(data.length, data[0].length, BufferedImage.TYPE_INT_RGB);
             for(int i=0; i<data.length; i++) {
                 for(int j=0; j<data[0].length; j++) {
-                    long a = data[i][j];
-                    int c = (int)(a%2);
-                    Color newColor = c==0?new Color(0,0,0):new Color(255, 255, 255);
-                    image.setRGB(j,i,newColor.getRGB());
+                    image.setRGB(j,i,data[i][j].intValue());
                 }
             }
             File output = new File(path);

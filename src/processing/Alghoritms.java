@@ -3,11 +3,7 @@ package processing;
 import file.TextFile;
 import preparation.Input;
 
-import java.io.Console;
-import java.io.FileWriter;
-import java.io.IOException;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicReference;
 
@@ -20,7 +16,7 @@ public class Alghoritms {
     final static double nu = 0.95;
 
     //Веса
-    static Double[][] dataW;
+    public static Double[][] dataW;
     //Сигмоида
     static double func(double value){
         return 1/(1 + Math.exp((-1) * alpha * value));
@@ -32,13 +28,13 @@ public class Alghoritms {
      * @param eps Выходные данные (эпсилон)
      * @param numEpoch Количество эпох обучения
      * */
-    public static void reversErrorDistribution(List<List<Integer>> data, Double nuCustom, List<Double> eps, int numEpoch){
+    public static void reversErrorDistribution(List<List<Long>> data, Double nuCustom, List<Double> eps, int numEpoch){
         if(nuCustom == null){
             nuCustom = nu;
         }
         //Получим количество переменных
         int xN = data.get(0).size();
-        dataW = Input.randMatrix(xN, -1, 1);
+        dataW = Input.randMatrix(xN, 0, 100);
         Double finalNuCustom = nuCustom;
         for(int i = 0; i < numEpoch; i++) {
             //Значение эпохи (выходное)
@@ -105,20 +101,23 @@ public class Alghoritms {
                 });
                 valEp.set(valEp.get() + Math.pow(func(s[s.length-1]) - row.get(row.size()-1),2));
             });
-            eps.add(Math.sqrt(valEp.get()/8));
+            eps.add(Math.sqrt(valEp.get()/data.size()));
+            System.out.println("End epoch №" + i);
         }
+        TextFile.writeData(dataW, "a.dat");
     }
 
     /**Метод для проверки, как обучилась нейросеть
      * @param data Входные данные
      * @param nuCustom скорость обучения. Использовать из алгоритма обучения!
      * */
-    public static void reversErrorDistributionResult(List<List<Integer>> data, Double nuCustom) {
+    public static void reversErrorDistributionResult(List<List<Long>> data, Double nuCustom) {
         if (nuCustom == null) {
             nuCustom = nu;
         }
+        dataW = Input.readWeight("a.dat");
         //Получим количество переменных
-        int xN = data.get(0).size();
+        int xN = dataW.length;
         Double finalNuCustom = nuCustom;
         AtomicReference<Double> valEp = new AtomicReference<>(0.0);
         data.forEach(row -> {
@@ -159,7 +158,7 @@ public class Alghoritms {
                     //Длина не для последнего нейрона
                     AtomicReference<Integer> numEl = new AtomicReference<>(0);
                     for (Double val : dataW[numCol.get()]) {
-                        if (numEl.get() != 0) {
+                        if (numEl.get() != 0 && numEl.get() != row.size()) {
                             dataW[numCol.get()][numEl.get()] = val + finalNuCustom * value * row.get(numEl.get());
                         } else {
                             dataW[numCol.get()][numEl.get()] = val + finalNuCustom * value * x0;
@@ -220,7 +219,7 @@ public class Alghoritms {
             for (int i = 0; i < dataMatrix.size() - mask.length; i++) {
                 List<Long> line = new ArrayList<>();
                 for (int j = 0; j < dataMatrix.get(0).size() - mask[0].length; j++) {
-                    Long sum = 0l;
+                    long sum = 0L;
                     for (int iIn = i; iIn < i + mask.length; iIn++) {
                         for (int jIn = j; jIn < j + mask[0].length; jIn++) {
                             sum += matrix[iIn][jIn] * mask[iIn - i][jIn - j];
