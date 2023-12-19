@@ -28,13 +28,13 @@ public class Alghoritms {
      * @param eps Выходные данные (эпсилон)
      * @param numEpoch Количество эпох обучения
      * */
-    public static void reversErrorDistribution(List<List<Long>> data, Double nuCustom, List<Double> eps, int numEpoch){
+    public static void reversErrorDistribution(List<List<Long>> data, Double nuCustom, List<Double> eps, int numEpoch, boolean getResult){
         if(nuCustom == null){
             nuCustom = nu;
         }
         //Получим количество переменных
-        int xN = data.get(0).size();
-        dataW = Input.randMatrix(xN, 0, 100);
+        int xN = data.get(0).size() - 1;
+        dataW = Input.randMatrix(xN, -1, 1);
         Double finalNuCustom = nuCustom;
         for(int i = 0; i < numEpoch; i++) {
             //Значение эпохи (выходное)
@@ -50,7 +50,7 @@ public class Alghoritms {
                     s[k] += x0 * dataW[k][0];
                 }
                 //Остальные слагаемые суммы
-                for(int k = 0; k < row.size()-1; k++){
+                for(int k = 0; k < row.size()-2; k++){
                     for (int j = 0; j < dataW.length; j++) {
                         s[j] += dataW[j][k+1] * row.get(k);
                     }
@@ -59,7 +59,7 @@ public class Alghoritms {
                 numRow.set(dataW.length - 1);
                 s[numRow.get()] = dataW[numRow.get()][0] * xLast;
                 //Досчитаем последнюю сумму
-                for(int k = 0; k < row.size()-1; k++){
+                for(int k = 0; k < row.size()-2; k++){
                     s[numRow.get()] += dataW[numRow.get()][k+1] * func(s[k]);
                 }
                 //Дельта выхода
@@ -100,8 +100,11 @@ public class Alghoritms {
                     numCol.set(numCol.get() + 1);
                 });
                 valEp.set(valEp.get() + Math.pow(func(s[s.length-1]) - row.get(row.size()-1),2));
+                if(getResult) {
+                    System.out.println(func(s[s.length - 1]) + " => " + row.get(row.size() - 1));
+                }
             });
-            eps.add(Math.sqrt(valEp.get()/data.size()));
+            eps.add(Math.sqrt(valEp.get()/data.size()) * 100);
             System.out.println("End epoch №" + i);
         }
         TextFile.writeData(dataW, "a.dat");
@@ -119,10 +122,8 @@ public class Alghoritms {
         //Получим количество переменных
         int xN = dataW.length;
         Double finalNuCustom = nuCustom;
-        AtomicReference<Double> valEp = new AtomicReference<>(0.0);
         data.forEach(row -> {
             AtomicReference<Integer> numRow = new AtomicReference<>(0);
-            AtomicReference<Integer> numCol = new AtomicReference<>(0);
             //Создадим массив из сумм
             double[] s = new double[xN];
             //посчитаем S0...Sn
@@ -130,7 +131,7 @@ public class Alghoritms {
             for (int k = 0; k < dataW.length; k++) {
                 s[k] += x0 * dataW[k][0];
             }
-            for (int k = 0; k < row.size() - 1; k++) {
+            for (int k = 0; k < row.size() - 2; k++) {
                 for (int j = 0; j < dataW.length; j++) {
                     s[j] += dataW[j][k + 1] * row.get(k);
                 }
@@ -139,47 +140,10 @@ public class Alghoritms {
             numRow.set(dataW.length - 1);
             s[numRow.get()] = dataW[numRow.get()][0] * xLast;
             //Досчитаем последнюю сумму
-            for (int k = 0; k < row.size() - 1; k++) {
+            for (int k = 0; k < row.size() - 2; k++) {
                 s[numRow.get()] += dataW[numRow.get()][k + 1] * func(s[k]);
             }
-            //Дельта выхода
-            double delEx = row.get(row.size() - 1) - func(s[s.length - 1]);
-            //Дельта последняя
-            double delLast = func(s[s.length - 1]) * (1 - func(s[s.length - 1])) * delEx;
-            //Посчитаем дельты для каждого столбца, кроме последнего
-            List<Double> del = new ArrayList<>();
-            for (int k = 0; k < s.length - 1; k++) {
-                del.add(func(s[k]) * (1 - func(s[k])) * delLast * dataW[xN - 1][k + 1]);
-            }
-            del.add(delLast);
-            numCol.set(0);
-            del.forEach(value -> {
-                if (numCol.get() != del.size() - 1) {
-                    //Длина не для последнего нейрона
-                    AtomicReference<Integer> numEl = new AtomicReference<>(0);
-                    for (Double val : dataW[numCol.get()]) {
-                        if (numEl.get() != 0 && numEl.get() != row.size()) {
-                            dataW[numCol.get()][numEl.get()] = val + finalNuCustom * value * row.get(numEl.get());
-                        } else {
-                            dataW[numCol.get()][numEl.get()] = val + finalNuCustom * value * x0;
-                        }
-                        numEl.set(numEl.get() + 1);
-                    }
-                } else {
-                    //Длина для последнего нейрона
-                    AtomicReference<Integer> numEl = new AtomicReference<>(0);
-                    for (Double val : dataW[numCol.get()]) {
-                        if (numEl.get() != 0) {
-                            dataW[numCol.get()][numEl.get()] = val + finalNuCustom * value * func(s[numEl.get()]);
-                        } else {
-                            dataW[numCol.get()][numEl.get()] = val + finalNuCustom * value * xLast;
-                        }
-                        numEl.set(numEl.get() + 1);
-                    }
-                }
-                numCol.set(numCol.get() + 1);
-            });
-            System.out.println(func(s[s.length - 1]));
+            System.out.println(func(s[s.length - 1]) + " => " + row.get(row.size() - 1));
         });
     }
 

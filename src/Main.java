@@ -9,11 +9,10 @@ import java.util.List;
 import java.util.logging.Logger;
 
 public class Main {
-    private static String testPath = "archive\\test";
-    private static String trainPath = "archive\\train";
-    private static String preparePath = "archive";
+    private static String testPath = "dataset\\test";
+    private static String trainPath = "dataset\\train";
 
-    public static void main(String[] args) throws IOException {
+    public static void main(String[] args) {
         Date date = new Date();
         //Создаем маску
         Integer[][] mask = new Integer[3][3];
@@ -26,22 +25,21 @@ public class Main {
             throw new RuntimeException("Отсутствует тестовое множество");
         }
         List<List<Long>> data = new ArrayList<>();
-        Map<String, Integer> trainData = Input.readCsv(preparePath + "\\train.csv");
-        Arrays.stream(files)
+        /*Arrays.stream(files)
                 .forEach(file -> {
                     if(file.listFiles() == null || file.listFiles().length == 0){
                         throw new RuntimeException(String.format("Отсутствуют изображения в каталоге %s", file.getPath()));
                     }
-                    Arrays.stream(file.listFiles()).parallel().forEach(image -> {
+                    Arrays.stream(file.listFiles()).forEach(image -> {
                         try {
                             //Получим байты изображения для свёртывания
-                            Long[][] imgBytes = Input.listOfListIntInArr(PictureFile.readIntegerData(image.getPath(), 1000));
-                            imgBytes = Alghoritms.convolutionalNet(imgBytes, mask, 50, 50);
+                            Long[][] imgBytes = Input.listOfListIntInArr(PictureFile.readIntegerData(image.getPath()));
+                            imgBytes = Alghoritms.convolutionalNet(imgBytes, mask, 25, 25);
                             List<List<Integer>> convImageBytes = Input.arrInListOfListInteger(imgBytes);
-                            String path = image.getPath().substring(preparePath.length() + 1);
                             Long[] bytes = Input.addRes(Input.matrixToArray(convImageBytes),
-                                    trainData.get(path.replace("\\", "/")));
+                                    Integer.parseInt(file.getPath().charAt(file.getPath().length() - 1) + ""));
                             data.add(Arrays.asList(bytes));
+                            PictureFile.createJPG(imgBytes, "tmp.jpg");
                             System.out.printf("File %s has been processed%n", image.getPath());
                         }catch (Exception e){
                             System.out.printf("File %s has been error%n", image.getPath());
@@ -51,7 +49,7 @@ public class Main {
         });
         List <Double> eps = new ArrayList<>();
         //Обучаем нейросеть
-        Alghoritms.reversErrorDistribution(data, null, eps, 20);
+        Alghoritms.reversErrorDistribution(data, null, eps, 100, false);
         try (FileWriter writer = new FileWriter("error.dat", false)) {
             eps.forEach(val -> {
                 try {
@@ -65,8 +63,8 @@ public class Main {
         } catch (IOException e) {
             throw new RuntimeException(e.getMessage(), e);
         }
-        TextFile.writeData(Alghoritms.dataW, "a.dat");
-        files = new File(trainPath).listFiles((dir, name) -> !name.endsWith(".txt"));
+        TextFile.writeData(Alghoritms.dataW, "a.dat");*/
+        files = new File(testPath).listFiles((dir, name) -> !name.endsWith(".txt"));
         if(files == null || files.length == 0){
             throw new RuntimeException("Отсутствует тестовое множество");
         }
@@ -77,14 +75,16 @@ public class Main {
                     if(file.listFiles() == null || file.listFiles().length == 0){
                         throw new RuntimeException(String.format("Отсутствуют изображения в каталоге %s", file.getPath()));
                     }
-                    Arrays.stream(file.listFiles()).parallel().forEach(image -> {
+                    Arrays.stream(file.listFiles()).forEach(image -> {
                         try {
                             //Получим байты изображения для свёртывания
-                            Long[][] imgBytes = Input.listOfListIntInArr(PictureFile.readIntegerData(image.getPath(), 1000));
-                            imgBytes = Alghoritms.convolutionalNet(imgBytes, mask, 50, 50);
+                            Long[][] imgBytes = Input.listOfListIntInArr(PictureFile.readIntegerData(image.getPath()));
+                            imgBytes = Alghoritms.convolutionalNet(imgBytes, mask, 25, 25);
                             List<List<Integer>> convImageBytes = Input.arrInListOfListInteger(imgBytes);
-                            Long[] bytes = Input.matrixToArray(convImageBytes);
+                            Long[] bytes = Input.addRes(Input.matrixToArray(convImageBytes),
+                                    Integer.parseInt(file.getPath().charAt(file.getPath().length() - 1) + ""));
                             data.add(Arrays.asList(bytes));
+                            PictureFile.createJPG(imgBytes, "tmp.jpg");
                             System.out.printf("File %s has been processed%n", image.getPath());
                         }catch (Exception e){
                             System.out.printf("File %s has been error%n", image.getPath());
@@ -92,15 +92,7 @@ public class Main {
                         }
                     });
                 });
-        Alghoritms.reversErrorDistributionResult(data, null);
-
-        //Тест на не обучаемых данных
-        /*List<List<Integer>> bitesTest = PictureFile.readIntegerData("Test.tiff");
-        Long[][] biteMatrixTest = Input.listOfListIntInArr(bitesTest);
-        biteMatrixTest = Alghoritms.convolutionalNet(biteMatrixTest, mask, 10, 10);
-        Integer[] biteArrTest = Input.matrixToArray(Input.longInArr(biteMatrixTest));
-        Alghoritms.reversErrorDistributionResult(Input.arrInListOfList(Input.concatenateArr(Input.addRes(biteArrTest, 0),
-                Input.addRes(biteArrTest, 0))), null);*/
+        Alghoritms.reversErrorDistribution(data, null, new ArrayList<>(), 1, true);
         System.out.println((new Date().getTime() - date.getTime())/1000);
     }
 }
