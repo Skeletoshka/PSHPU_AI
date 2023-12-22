@@ -3,6 +3,8 @@ package processing;
 import file.TextFile;
 import preparation.Input;
 
+import java.io.FileWriter;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicReference;
@@ -36,6 +38,7 @@ public class Alghoritms {
         int xN = data.get(0).size() - 1;
         dataW = Input.randMatrix(xN, -1, 1);
         Double finalNuCustom = nuCustom;
+        List<String> output = new ArrayList<>();
         for(int i = 0; i < numEpoch; i++) {
             //Значение эпохи (выходное)
             AtomicReference<Double> valEp = new AtomicReference<>(0.0);
@@ -101,50 +104,29 @@ public class Alghoritms {
                 });
                 valEp.set(valEp.get() + Math.pow(func(s[s.length-1]) - row.get(row.size()-1),2));
                 if(getResult) {
-                    System.out.println(func(s[s.length - 1]) + " => " + row.get(row.size() - 1));
+                    output.add(func(s[s.length - 1]) + " => " + row.get(row.size() - 1));
                 }
             });
             eps.add(Math.sqrt(valEp.get()/data.size()) * 100);
             System.out.println("End epoch №" + i);
         }
-        TextFile.writeData(dataW, "a.dat");
-    }
-
-    /**Метод для проверки, как обучилась нейросеть
-     * @param data Входные данные
-     * @param nuCustom скорость обучения. Использовать из алгоритма обучения!
-     * */
-    public static void reversErrorDistributionResult(List<List<Long>> data, Double nuCustom) {
-        if (nuCustom == null) {
-            nuCustom = nu;
+        if(!getResult) {
+            TextFile.writeData(dataW, "a.dat");
+        }else{
+            try (FileWriter writer = new FileWriter("output.dat", false)) {
+                output.forEach(val -> {
+                    try {
+                        writer.write(val.replace('.', ','));
+                        writer.append("\n");
+                    } catch (Exception e){
+                        throw new RuntimeException(e.getMessage(), e);
+                    }
+                });
+                writer.flush();
+            } catch (IOException e) {
+                throw new RuntimeException(e.getMessage(), e);
+            }
         }
-        dataW = Input.readWeight("a.dat");
-        //Получим количество переменных
-        int xN = dataW.length;
-        Double finalNuCustom = nuCustom;
-        data.forEach(row -> {
-            AtomicReference<Integer> numRow = new AtomicReference<>(0);
-            //Создадим массив из сумм
-            double[] s = new double[xN];
-            //посчитаем S0...Sn
-            //Для начала посчитаем первое слагаемое для каждой суммы
-            for (int k = 0; k < dataW.length; k++) {
-                s[k] += x0 * dataW[k][0];
-            }
-            for (int k = 0; k < row.size() - 2; k++) {
-                for (int j = 0; j < dataW.length; j++) {
-                    s[j] += dataW[j][k + 1] * row.get(k);
-                }
-            }
-            //Посчитаем последнюю сумму
-            numRow.set(dataW.length - 1);
-            s[numRow.get()] = dataW[numRow.get()][0] * xLast;
-            //Досчитаем последнюю сумму
-            for (int k = 0; k < row.size() - 2; k++) {
-                s[numRow.get()] += dataW[numRow.get()][k + 1] * func(s[k]);
-            }
-            System.out.println(func(s[s.length - 1]) + " => " + row.get(row.size() - 1));
-        });
     }
 
     /**Алгоритм свертывания нейросети
@@ -158,12 +140,10 @@ public class Alghoritms {
         List<List<Long>> outputMatrix=null;
         do {
             Long[][] tempMatrix;
-            if(outputMatrix==null) {
-                //Первая итерация - не было свертывания
+            if(outputMatrix==null) {//Первая итерация - не было свертывания
                 tempMatrix = matrix;
                 outputMatrix = dataMatrix;
-            }else{
-                //после первой итерации - используем данные от свертывания
+            }else{//после первой итерации - используем данные от свертывания
                 tempMatrix=Input.listOfListLongInArr(outputMatrix);
                 dataMatrix=outputMatrix;
             }
@@ -192,8 +172,7 @@ public class Alghoritms {
                     line.add(sum);
                 }
                 outputMatrix.add(line);
-            }
-            //Используем пуллинг для матрицы
+            }//Используем пуллинг для матрицы
             outputMatrix=maxPulling(outputMatrix, 2);
         }while(outputMatrix.size() > n || outputMatrix.get(0).size() > m );
         return Input.listOfListLongInArr(outputMatrix);

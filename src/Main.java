@@ -25,21 +25,20 @@ public class Main {
             throw new RuntimeException("Отсутствует тестовое множество");
         }
         List<List<Long>> data = new ArrayList<>();
-        /*Arrays.stream(files)
+        Arrays.stream(files).parallel()
                 .forEach(file -> {
                     if(file.listFiles() == null || file.listFiles().length == 0){
                         throw new RuntimeException(String.format("Отсутствуют изображения в каталоге %s", file.getPath()));
                     }
-                    Arrays.stream(file.listFiles()).forEach(image -> {
+                    Arrays.stream(file.listFiles()).parallel().forEach(image -> {
                         try {
                             //Получим байты изображения для свёртывания
                             Long[][] imgBytes = Input.listOfListIntInArr(PictureFile.readIntegerData(image.getPath()));
                             imgBytes = Alghoritms.convolutionalNet(imgBytes, mask, 25, 25);
                             List<List<Integer>> convImageBytes = Input.arrInListOfListInteger(imgBytes);
                             Long[] bytes = Input.addRes(Input.matrixToArray(convImageBytes),
-                                    Integer.parseInt(file.getPath().charAt(file.getPath().length() - 1) + ""));
+                                    Integer.parseInt(String.valueOf(file.getPath().charAt(file.getPath().length() - 1))));
                             data.add(Arrays.asList(bytes));
-                            PictureFile.createJPG(imgBytes, "tmp.jpg");
                             System.out.printf("File %s has been processed%n", image.getPath());
                         }catch (Exception e){
                             System.out.printf("File %s has been error%n", image.getPath());
@@ -63,7 +62,6 @@ public class Main {
         } catch (IOException e) {
             throw new RuntimeException(e.getMessage(), e);
         }
-        TextFile.writeData(Alghoritms.dataW, "a.dat");*/
         files = new File(testPath).listFiles((dir, name) -> !name.endsWith(".txt"));
         if(files == null || files.length == 0){
             throw new RuntimeException("Отсутствует тестовое множество");
@@ -75,16 +73,15 @@ public class Main {
                     if(file.listFiles() == null || file.listFiles().length == 0){
                         throw new RuntimeException(String.format("Отсутствуют изображения в каталоге %s", file.getPath()));
                     }
-                    Arrays.stream(file.listFiles()).forEach(image -> {
+                    Arrays.stream(file.listFiles()).parallel().forEach(image -> {
                         try {
                             //Получим байты изображения для свёртывания
                             Long[][] imgBytes = Input.listOfListIntInArr(PictureFile.readIntegerData(image.getPath()));
                             imgBytes = Alghoritms.convolutionalNet(imgBytes, mask, 25, 25);
                             List<List<Integer>> convImageBytes = Input.arrInListOfListInteger(imgBytes);
                             Long[] bytes = Input.addRes(Input.matrixToArray(convImageBytes),
-                                    Integer.parseInt(file.getPath().charAt(file.getPath().length() - 1) + ""));
+                                    Integer.parseInt(String.valueOf(file.getPath().charAt(file.getPath().length() - 1))));
                             data.add(Arrays.asList(bytes));
-                            PictureFile.createJPG(imgBytes, "tmp.jpg");
                             System.out.printf("File %s has been processed%n", image.getPath());
                         }catch (Exception e){
                             System.out.printf("File %s has been error%n", image.getPath());
